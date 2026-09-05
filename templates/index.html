@@ -900,19 +900,28 @@ main {
    PRINT STYLESHEET
    ================================================================ */
 @media print {
-  body { background: #fff; color: #000; }
+  body { background: #fff !important; color: #000 !important; font-size: 11pt; }
   header, nav.tabs, .composer, .new-session, .symptom-chips,
-  .toast-container, .theme-toggle, .export-btn, .conv-header { display: none !important; }
-  main { padding: 0; max-width: 100%; }
-  .triage-grid { display: block; }
-  .panel { border: 1px solid #ccc; box-shadow: none; backdrop-filter: none; background: #fff; }
+  .toast-container, .theme-toggle, .export-btn, .conv-header,
+  .fab, .fab-menu, .stepper, .modal-overlay, .bg-mesh,
+  .emoji-popover, #shortcutsModal, #firstAidModal, .typing-indicator,
+  .first-aid-header-btn, .kbd-hint, .provider-badge, .voice-btn,
+  .emoji-btn { display: none !important; }
+
+  main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
+  .triage-grid { display: block !important; }
+  .panel { border: 1px solid #cbd5e1 !important; box-shadow: none !important; backdrop-filter: none !important; background: #fff !important; margin-bottom: 20px !important; }
   .view { display: none !important; }
   #view-triage { display: block !important; }
-  .conv-log { max-height: none; overflow: visible; }
-  #notePanel { display: block !important; margin-top: 20px; page-break-before: always; }
-  .turn.patient .bubble { background: #eee; color: #000; }
-  .badge::before { display: none; }
+  .conv-log { max-height: none !important; overflow: visible !important; }
+  #notePanel { display: block !important; margin-top: 15px !important; page-break-inside: avoid !important; }
+  .turn.patient .bubble { background: #f1f5f9 !important; color: #000 !important; border: 1px solid #cbd5e1 !important; }
+  .turn.assistant .bubble { background: #fff !important; color: #000 !important; border: 1px solid #cbd5e1 !important; }
+  .badge::before { display: none !important; }
+  .first-aid-box { border: 1.5px solid #1A8D8D !important; background: #f8fafc !important; color: #000 !important; }
+  .first-aid-box.critical-fa { border: 1.5px solid #dc3545 !important; background: #fff5f5 !important; color: #000 !important; }
 }
+
 
 /* Added CSS */
 .bg-mesh { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
@@ -1943,7 +1952,18 @@ if (fabBtn) {
   $('#fabNewSession').addEventListener('click', () => { startSession(); fabOpen = false; $('#fabMenu').classList.remove('visible'); fabBtn.textContent = '⚡'; });
   $('#fabDarkMode').addEventListener('click', () => { $('#themeToggle').click(); });
   $('#fabShortcuts').addEventListener('click', () => { $('#shortcutsModal').classList.add('visible'); fabOpen = false; $('#fabMenu').classList.remove('visible'); fabBtn.textContent = '⚡'; });
-  $('#fabExport').addEventListener('click', () => { if (triageComplete) window.print(); else showToast('Complete a triage first', '⚠️'); });
+
+  $('#fabExport').addEventListener('click', () => {
+    fabOpen = false;
+    $('#fabMenu').classList.remove('visible');
+    $('#fabBtn').textContent = '⚡';
+    if (triageComplete) {
+      setTimeout(() => window.print(), 100);
+    } else {
+      showToast('Complete a triage first', '⚠️');
+    }
+  });
+
 }
 
 /* Keyboard Shortcuts */
