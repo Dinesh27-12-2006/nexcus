@@ -454,12 +454,12 @@ main {
   color: var(--accent);
   background: var(--accent-dim);
   border: 1px solid transparent;
-  padding: 5px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   cursor: pointer;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
   transition: all var(--transition);
 }
 .symptom-chip:hover, .symptom-chip:active {
@@ -1054,13 +1054,14 @@ main {
           <div class="typing-dot"></div>
         </div>
         <div class="symptom-chips" id="symptomChips">
-          <button class="symptom-chip" data-symptom="I'm experiencing chest pain">🫀 Chest Pain</button>
-          <button class="symptom-chip" data-symptom="I have a fever and chills">🌡️ Fever</button>
-          <button class="symptom-chip" data-symptom="I'm having difficulty breathing">🫁 Breathing Issues</button>
-          <button class="symptom-chip" data-symptom="I had an injury or fall">🩹 Injury</button>
-          <button class="symptom-chip" data-symptom="I have stomach pain and nausea">🤢 Stomach Pain</button>
-          <button class="symptom-chip" data-symptom="I have a mild symptom or small concern">💊 Mild Concern</button>
+          <button type="button" class="symptom-chip" data-symptom="I'm experiencing chest pain">🫀 Chest Pain</button>
+          <button type="button" class="symptom-chip" data-symptom="I have a fever and chills">🌡️ Fever</button>
+          <button type="button" class="symptom-chip" data-symptom="I'm having difficulty breathing">🫁 Breathing Issues</button>
+          <button type="button" class="symptom-chip" data-symptom="I had an injury or fall">🩹 Injury</button>
+          <button type="button" class="symptom-chip" data-symptom="I have stomach pain and nausea">🤢 Stomach Pain</button>
+          <button type="button" class="symptom-chip" data-symptom="I have a mild symptom or small concern">💊 Mild Concern</button>
         </div>
+
         <div class="composer">
           <textarea id="composerInput" placeholder="Describe your symptoms or answer the question..." rows="1"></textarea>
           <button class="voice-btn" id="voiceBtn" title="Voice input">🎤</button>
@@ -1478,50 +1479,35 @@ function renderNote(note) {
 /* ==================================================================
    EVENT LISTENERS
    ================================================================== */
-const handleSend = () => sendMessage(composerInput.value);
-sendBtn.addEventListener('click', handleSend);
-sendBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleSend(); });
-
+sendBtn.addEventListener('click', () => sendMessage(composerInput.value));
 composerInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(composerInput.value); }
 });
-
-const newSessionBtn = $('#newSessionBtn');
-if (newSessionBtn) {
-  newSessionBtn.addEventListener('click', startSession);
-  newSessionBtn.addEventListener('touchend', (e) => { e.preventDefault(); startSession(); });
-}
+$('#newSessionBtn').addEventListener('click', startSession);
 
 const brandBtn = $('#brandBtn');
 if (brandBtn) {
-  const handleBrandClick = () => {
+  brandBtn.addEventListener('click', () => {
     const triageTab = $('[data-view="triage"]');
     if (triageTab) triageTab.click();
     startSession();
-  };
-  brandBtn.addEventListener('click', handleBrandClick);
-  brandBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleBrandClick(); });
+  });
 }
 
 // Symptom chips
-async function handleChipClick(chip) {
-  const text = chip.dataset.symptom;
-  composerInput.value = text;
-  if (!sessionId || triageComplete) {
-    await startSession();
-  }
-  sendMessage(text);
-}
-
 $$('.symptom-chip').forEach(chip => {
-  chip.addEventListener('click', (e) => {
+  const triggerSymptom = async (e) => {
     e.preventDefault();
-    handleChipClick(chip);
-  });
-  chip.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    handleChipClick(chip);
-  });
+    const text = chip.dataset.symptom;
+    composerInput.value = text;
+    composerInput.focus();
+    if (!sessionId || triageComplete) {
+      await startSession();
+    }
+    sendMessage(text);
+  };
+  chip.addEventListener('click', triggerSymptom);
+  chip.addEventListener('touchend', triggerSymptom);
 });
 
 
