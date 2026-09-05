@@ -948,6 +948,16 @@ main {
 .voice-btn:hover { border-color: var(--accent); color: var(--accent); }
 .voice-btn.recording { background: var(--critical); border-color: var(--critical); color: #fff; animation: micPulse 1.5s infinite; }
 
+.emoji-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line-strong); background: var(--panel-solid); color: var(--ink-muted); font-size: 18px; cursor: pointer; transition: all var(--transition); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.emoji-btn:hover { border-color: var(--accent); transform: scale(1.08); }
+.emoji-popover { position: absolute; bottom: 75px; right: 80px; background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 12px; z-index: 1000; width: 260px; display: none; }
+.emoji-popover.visible { display: block; animation: fadeInUp 0.15s ease-out; }
+.emoji-cat-title { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--ink-muted); letter-spacing: 0.05em; margin-bottom: 8px; }
+.emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.emoji-item { font-size: 20px; display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: var(--radius-sm); cursor: pointer; user-select: none; transition: transform 0.15s, background 0.15s; }
+.emoji-item:hover { background: var(--accent-dim); transform: scale(1.25); }
+
+
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
 .modal-overlay.visible { display: flex; }
 .modal { background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 28px; max-width: 440px; width: 90%; box-shadow: var(--shadow-lg); animation: scaleIn 0.3s ease-out; }
@@ -1022,11 +1032,11 @@ main {
 </div>
 
 <nav class="tabs">
-  <button class="active" data-view="triage">Triage</button>
-  <button data-view="rules">Rules</button>
-  <button data-view="samples">Samples</button>
-  <button data-view="history">History</button>
-  <button data-view="analytics">Analytics</button>
+  <button class="active" data-view="triage">🩺 Triage</button>
+  <button data-view="rules">📜 Rules</button>
+  <button data-view="samples">📋 Samples</button>
+  <button data-view="history">🕒 History</button>
+  <button data-view="analytics">📊 Analytics</button>
 </nav>
 
 <main>
@@ -1035,7 +1045,7 @@ main {
   <section id="view-triage" class="view active">
     <div class="triage-grid">
 
-      <div class="panel conversation">
+      <div class="panel conversation" style="position: relative;">
         <div class="conv-header">
           <div class="conv-header-left">
             <div class="conv-status-dot" id="convStatusDot"></div>
@@ -1059,13 +1069,41 @@ main {
         </div>
         <div class="composer">
           <textarea id="composerInput" placeholder="Describe your symptoms or answer the question..." rows="1"></textarea>
-          <button class="voice-btn" id="voiceBtn" title="Voice input">🎤</button>
-          <button class="send-btn" id="sendBtn">Send ↑</button>
+          <button type="button" class="emoji-btn" id="emojiBtn" title="Add emoji">😊</button>
+          <button type="button" class="voice-btn" id="voiceBtn" title="Voice input">🎤</button>
+          <button type="button" class="send-btn" id="sendBtn">Send ↑</button>
         </div>
+        
+        <!-- Quick Emoji Popover -->
+        <div class="emoji-popover" id="emojiPopover">
+          <div class="emoji-cat-title">Medical & Feeling Emojis</div>
+          <div class="emoji-grid">
+            <span class="emoji-item" data-emoji="🫀" title="Chest / Heart">🫀</span>
+            <span class="emoji-item" data-emoji="🫁" title="Lungs / Breathing">🫁</span>
+            <span class="emoji-item" data-emoji="🌡️" title="Fever">🌡️</span>
+            <span class="emoji-item" data-emoji="🩹" title="Injury / Wound">🩹</span>
+            <span class="emoji-item" data-emoji="💊" title="Medication">💊</span>
+            <span class="emoji-item" data-emoji="🤢" title="Nausea">🤢</span>
+            <span class="emoji-item" data-emoji="🤮" title="Vomiting">🤮</span>
+            <span class="emoji-item" data-emoji="🤕" title="Headache / Hurt">🤕</span>
+            <span class="emoji-item" data-emoji="🥵" title="High Fever / Sweating">🥵</span>
+            <span class="emoji-item" data-emoji="🥶" title="Chills">🥶</span>
+            <span class="emoji-item" data-emoji="😵" title="Dizziness">😵</span>
+            <span class="emoji-item" data-emoji="🩸" title="Bleeding">🩸</span>
+            <span class="emoji-item" data-emoji="😫" title="Severe Pain">😫</span>
+            <span class="emoji-item" data-emoji="😰" title="Anxious">😰</span>
+            <span class="emoji-item" data-emoji="😣" title="Struggling">😣</span>
+            <span class="emoji-item" data-emoji="🥺" title="Need help">🥺</span>
+            <span class="emoji-item" data-emoji="👍" title="Better">👍</span>
+            <span class="emoji-item" data-emoji="👎" title="Worse">👎</span>
+          </div>
+        </div>
+
         <div class="new-session">
           <button id="newSessionBtn">⟳ New session</button>
         </div>
       </div>
+
 
       <div>
         <div class="panel" style="margin-bottom: 16px;">
@@ -1271,7 +1309,8 @@ function timeNow() {
 function addTurn(role, text) {
   const div = document.createElement('div');
   div.className = 'turn ' + role;
-  const label = role === 'assistant' ? 'INTAKE ASSISTANT' : 'YOU';
+  const label = role === 'assistant' ? '🤖 INTAKE ASSISTANT' : '👤 YOU';
+
   div.innerHTML = `
     <div class="turn-header">
       <span class="who">${label}</span>
@@ -1493,6 +1532,31 @@ composerInput.addEventListener('input', () => {
   composerInput.style.height = 'auto';
   composerInput.style.height = Math.min(composerInput.scrollHeight, 120) + 'px';
 });
+
+// Emoji Popover
+const emojiBtn = $('#emojiBtn');
+const emojiPopover = $('#emojiPopover');
+if (emojiBtn && emojiPopover) {
+  emojiBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    emojiPopover.classList.toggle('visible');
+  });
+  $$('.emoji-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const emoji = item.dataset.emoji;
+      composerInput.value += (composerInput.value ? ' ' : '') + emoji;
+      composerInput.focus();
+      emojiPopover.classList.remove('visible');
+    });
+  });
+  document.addEventListener('click', (e) => {
+    if (!emojiPopover.contains(e.target) && e.target !== emojiBtn) {
+      emojiPopover.classList.remove('visible');
+    }
+  });
+}
+
 
 /* ==================================================================
    TABS
