@@ -1,0 +1,76 @@
+{
+  "sample_cases": [
+    {
+      "id": "case_001",
+      "patient_description": "I have severe chest pain that started suddenly this morning. It feels like pressure in my chest and it's radiating to my left arm.",
+      "expected_urgency": "Critical",
+      "expected_department": "Emergency",
+      "rule_matched": "CHEST_PAIN_001",
+      "reasoning": "Acute onset chest pain with classic cardiac presentation (pressure, radiation to left arm)"
+    },
+    {
+      "id": "case_002",
+      "patient_description": "I fell off my bicycle about 2 hours ago and my right arm hurts a lot. It's swollen and I can't move my wrist.",
+      "expected_urgency": "High",
+      "expected_department": "Emergency",
+      "rule_matched": "INJURY_001",
+      "reasoning": "Traumatic injury with significant swelling and loss of function suggesting fracture"
+    },
+    {
+      "id": "case_003",
+      "patient_description": "I've had a fever of 39.5°C for 4 days now. I also have a bad cough and my throat hurts.",
+      "expected_urgency": "High",
+      "expected_department": "Urgent Care",
+      "rule_matched": "FEVER_001",
+      "reasoning": "Prolonged high fever with respiratory symptoms suggests respiratory infection requiring urgent care"
+    },
+    {
+      "id": "case_004",
+      "patient_description": "I woke up this morning and I can't catch my breath. Even sitting still, I feel like I'm not getting enough air.",
+      "expected_urgency": "Critical",
+      "expected_department": "Emergency",
+      "rule_matched": "BREATHING_001",
+      "reasoning": "Acute dyspnea at rest is a medical emergency requiring immediate evaluation"
+    },
+    {
+      "id": "case_005",
+      "patient_description": "I've had a headache for two days.",
+      "expected_urgency": "Moderate",
+      "expected_department": "Urgent Care",
+      "rule_matched": "UNCERTAIN_001",
+      "reasoning": "Insufficient information - need follow-ups about severity, fever, neck stiffness, etc."
+    },
+    {
+      "id": "case_006",
+      "patient_description": "My stomach really hurts. It started about 6 hours ago and I've thrown up twice. The pain is in my lower right area.",
+      "expected_urgency": "High",
+      "expected_department": "Emergency",
+      "rule_matched": "ABDOMINAL_PAIN_001",
+      "reasoning": "Acute severe abdominal pain with vomiting and localized tenderness requires emergency evaluation"
+    },
+    {
+      "id": "case_007",
+      "patient_description": "I'm here for my annual checkup. I'm feeling fine.",
+      "expected_urgency": "Low",
+      "expected_department": "General",
+      "rule_matched": "MILD_SYMPTOMS_001",
+      "reasoning": "No acute complaints - routine general practice evaluation appropriate"
+    },
+    {
+      "id": "case_008_edge",
+      "patient_description": "Something doesn't feel right but I can't explain it.",
+      "expected_urgency": "Moderate",
+      "expected_department": "Urgent Care",
+      "rule_matched": "UNCERTAIN_001",
+      "reasoning": "Vague symptoms with high uncertainty - escalate for detailed human assessment"
+    },
+    {
+      "id": "case_009_contradiction",
+      "patient_description": "I have mild chest discomfort and I'm also having difficulty breathing, but my pain is only 2/10.",
+      "expected_urgency": "Critical",
+      "expected_department": "Emergency",
+      "rule_matched": "BREATHING_001",
+      "reasoning": "Breathing difficulty overrides pain severity - any combination of chest+breathing issues needs emergency evaluation"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "rules": [
+    {
+      "id": "FEVER_001",
+      "condition": "Fever",
+      "criteria": {
+        "primary": "temperature > 38.5°C",
+        "secondary": ["duration > 3 days", "associated_symptoms"]
+      },
+      "urgency": "High",
+      "department": "Urgent Care",
+      "description": "High fever with systemic symptoms requires urgent evaluation",
+      "follow_ups": ["How long have you had the fever?", "Do you have chills or sweats?", "Any cough, sore throat, or body aches?"],
+      "red_flags": ["fever with stiff neck", "fever with severe headache", "fever with difficulty breathing"]
+    },
+    {
+      "id": "CHEST_PAIN_001",
+      "condition": "Chest Pain - Acute",
+      "criteria": {
+        "primary": "chest pain onset < 24 hours",
+        "secondary": ["sharp or pressure", "radiating to arm/jaw"]
+      },
+      "urgency": "Critical",
+      "department": "Emergency",
+      "description": "Acute chest pain requires immediate emergency evaluation to rule out cardiac events",
+      "follow_ups": ["How long have you had this pain?", "Is it sharp, dull, or pressure-like?", "Does it radiate anywhere?", "Any shortness of breath?"],
+      "red_flags": ["chest pain with shortness of breath", "chest pain with sweating", "chest pain radiating to left arm"],
+      "escalate": true
+    },
+    {
+      "id": "BREATHING_001",
+      "condition": "Difficulty Breathing - Acute",
+      "criteria": {
+        "primary": "shortness of breath at rest or minimal exertion",
+        "secondary": ["rapid breathing", "wheezing"]
+      },
+      "urgency": "Critical",
+      "department": "Emergency",
+      "description": "Acute breathing difficulty is a medical emergency",
+      "follow_ups": ["When did this start?", "Are you wheezing?", "Any chest pain?", "Recent illness or fever?"],
+      "red_flags": ["breathing difficulty at rest", "blue lips or fingers", "inability to speak full sentences"],
+      "escalate": true
+    },
+    {
+      "id": "INJURY_001",
+      "condition": "Traumatic Injury",
+      "criteria": {
+        "primary": "recent trauma/fall/accident",
+        "secondary": ["visible deformity", "severe swelling", "loss of function"]
+      },
+      "urgency": "High",
+      "department": "Emergency",
+      "description": "Significant traumatic injury requires imaging and immediate assessment",
+      "follow_ups": ["How did the injury happen?", "Can you move the injured area?", "Is there numbness or tingling?", "Any loss of consciousness?"],
+      "red_flags": ["severe deformity", "unable to bear weight", "signs of fracture"]
+    },
+    {
+      "id": "ABDOMINAL_PAIN_001",
+      "condition": "Severe Abdominal Pain",
+      "criteria": {
+        "primary": "acute abdominal pain",
+        "secondary": ["pain level > 7/10", "localized tenderness"]
+      },
+      "urgency": "High",
+      "department": "Emergency",
+      "description": "Severe abdominal pain requires urgent investigation to rule out surgical abdomen",
+      "follow_ups": ["Where exactly is the pain?", "On a scale of 1-10, how severe?", "Any nausea or vomiting?", "When did it start?"],
+      "red_flags": ["rigid abdomen", "severe pain with fever", "vomiting with inability to keep fluids down"]
+    },
+    {
+      "id": "MILD_SYMPTOMS_001",
+      "condition": "Minor Symptoms",
+      "criteria": {
+        "primary": "mild pain or discomfort",
+        "secondary": ["patient alert and comfortable", "normal vital signs"]
+      },
+      "urgency": "Low",
+      "department": "General",
+      "description": "Minor symptoms can be evaluated in general practice setting",
+      "follow_ups": ["When did symptoms start?", "Any medication taken?", "Any allergies we should know about?"]
+    },
+    {
+      "id": "UNCERTAIN_001",
+      "condition": "Insufficient Information",
+      "criteria": {
+        "primary": "vague or unclear presentation",
+        "secondary": ["missing critical vital information"]
+      },
+      "urgency": "Moderate",
+      "department": "Urgent Care",
+      "description": "Cases with insufficient information require escalation for detailed human assessment",
+      "follow_ups": ["Can you describe your main concern in more detail?", "When did this start?", "What makes it better or worse?"],
+      "escalate": true
+    }
+  ],
+  "null_case": {
+    "id": "NULL_001",
+    "condition": "No Clear Complaint",
+    "description": "Patient has no clear presenting complaint",
+    "action": "Request clarification from patient",
+    "department": "General",
+    "urgency": "Routine"
+  }
+}
