@@ -957,6 +957,44 @@ main {
 .emoji-item { font-size: 20px; display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: var(--radius-sm); cursor: pointer; user-select: none; transition: transform 0.15s, background 0.15s; }
 .emoji-item:hover { background: var(--accent-dim); transform: scale(1.25); }
 
+.first-aid-header-btn {
+
+  background: rgba(220, 53, 69, 0.12);
+  color: var(--critical);
+  border: 1px solid rgba(220, 53, 69, 0.35);
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition);
+}
+.first-aid-header-btn:hover {
+  background: var(--critical);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.emergency-hotlines { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.hotline-card { flex: 1; min-width: 160px; background: rgba(220, 53, 69, 0.08); border: 1px solid rgba(220, 53, 69, 0.25); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 12px; color: var(--ink); }
+.first-aid-guide-list { display: flex; flex-direction: column; gap: 10px; }
+.fa-card { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg); overflow: hidden; }
+.fa-card-header { background: var(--panel-solid); padding: 9px 14px; font-weight: 700; font-size: 13px; color: var(--ink); border-bottom: 1px solid var(--line); }
+.fa-card-body { padding: 10px 14px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+.fa-card-body p { margin: 0 0 5px 0; }
+.fa-card-body p:last-child { margin-bottom: 0; }
+
+.first-aid-box { margin-top: 14px; padding: 14px 16px; background: rgba(26, 141, 141, 0.08); border: 1px solid var(--accent); border-radius: var(--radius-sm); }
+.first-aid-box.critical-fa { background: rgba(220, 53, 69, 0.09); border-color: var(--critical); }
+.fa-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.fa-steps { margin: 0; padding-left: 20px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
+.fa-steps li { margin-bottom: 4px; }
+.fa-call-alert { margin-top: 10px; font-weight: 700; font-size: 12px; color: var(--critical); display: flex; align-items: center; gap: 6px; }
+
+
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
 .modal-overlay.visible { display: flex; }
@@ -995,7 +1033,9 @@ main {
   </div>
 
   <div class="header-right">
+    <button type="button" class="first-aid-header-btn" id="firstAidBtn" title="Emergency First Aid Protocol">🩹 First Aid</button>
     <select id="langSelect" class="lang-select">
+
       <option value="en">EN</option>
       <option value="es">ES</option>
     </select>
@@ -1172,9 +1212,11 @@ main {
 <div class="fab-menu" id="fabMenu">
   <div class="fab-action" id="fabNewSession">🩺 New Triage Session</div>
   <div class="fab-action" id="fabDarkMode">🌙 Toggle Dark Mode</div>
+  <div class="fab-action" id="fabFirstAid">🩹 First Aid Protocol</div>
   <div class="fab-action" id="fabShortcuts">⌨️ Keyboard Shortcuts</div>
   <div class="fab-action" id="fabExport">📄 Export Current Note</div>
 </div>
+
 
 <!-- Keyboard Shortcuts Modal -->
 <div class="modal-overlay" id="shortcutsModal">
@@ -1207,7 +1249,86 @@ main {
   </div>
 </div>
 
+<!-- First Aid Emergency Guide Modal -->
+<div class="modal-overlay" id="firstAidModal">
+  <div class="modal first-aid-modal" style="max-width: 620px; max-height: 85vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">🩹 Emergency First Aid Protocol</h2>
+      <button id="closeFirstAidModal" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--ink-muted);">✕</button>
+    </div>
+    
+    <div class="emergency-hotlines">
+      <div class="hotline-card">🚨 Emergency (US/CA): <b>911</b></div>
+      <div class="hotline-card">🚑 Emergency (EU/India): <b>112 / 108</b></div>
+      <div class="hotline-card">🚒 Emergency (UK): <b>999</b></div>
+    </div>
+
+    <div class="first-aid-guide-list">
+      <div class="fa-card">
+        <div class="fa-card-header">🫀 Chest Pain & Suspected Heart Attack</div>
+        <div class="fa-card-body">
+          <p>• <b>Call 911 / 112 immediately.</b> Every minute counts.</p>
+          <p>• Have the person sit in a comfortable, resting position with back supported.</p>
+          <p>• Loosen restrictive clothing around neck and chest.</p>
+          <p>• If prescribed nitroglycerin or advised by emergency dispatcher, help them take it.</p>
+          <p>• Keep the patient calm; begin CPR if they become unresponsive and stop breathing.</p>
+        </div>
+      </div>
+
+      <div class="fa-card">
+        <div class="fa-card-header">🫁 Breathing Distress & Severe Asthma</div>
+        <div class="fa-card-body">
+          <p>• Sit the person upright leaning slightly forward (tripod posture).</p>
+          <p>• Help administer their prescribed rescue inhaler (e.g. Albuterol).</p>
+          <p>• Open windows for fresh air and keep the environment peaceful.</p>
+          <p>• If lips or fingers turn blue or person cannot speak in sentences, call emergency right away.</p>
+        </div>
+      </div>
+
+      <div class="fa-card">
+        <div class="fa-card-header">🩸 Severe Bleeding & Wound Care</div>
+        <div class="fa-card-body">
+          <p>• Apply firm, continuous pressure directly over the wound with a clean cloth.</p>
+          <p>• Maintain pressure for at least 10-15 minutes without removing the dressing.</p>
+          <p>• If blood soaks through, place another cloth on top — do not remove the base layer.</p>
+          <p>• Elevate the injured limb above heart level if no bone fracture is suspected.</p>
+        </div>
+      </div>
+
+      <div class="fa-card">
+        <div class="fa-card-header">🩹 Fractures & Sprains (R.I.C.E. Protocol)</div>
+        <div class="fa-card-body">
+          <p>• <b>Rest:</b> Keep the injured area completely immobilized; do NOT attempt to realign broken bones.</p>
+          <p>• <b>Ice:</b> Apply a cold pack wrapped in a towel for 15-20 minutes every 2-3 hours.</p>
+          <p>• <b>Compress:</b> Lightly wrap with an elastic bandage without cutting off blood flow.</p>
+          <p>• <b>Elevate:</b> Prop the limb above heart level to reduce painful swelling.</p>
+        </div>
+      </div>
+
+      <div class="fa-card">
+        <div class="fa-card-header">🌡️ High Fever & Heat Illness</div>
+        <div class="fa-card-body">
+          <p>• Give frequent, small sips of water or electrolyte solution.</p>
+          <p>• Apply cool damp washcloths to forehead, neck, and underarms.</p>
+          <p>• Move to a cool, shaded, or air-conditioned area with lightweight clothing.</p>
+          <p>• Seek emergency care if temperature exceeds 39.5°C (103°F) or seizures occur.</p>
+        </div>
+      </div>
+
+      <div class="fa-card">
+        <div class="fa-card-header">⚡ Hands-Only CPR & Recovery Position</div>
+        <div class="fa-card-body">
+          <p>• Tap shoulders and shout "Are you okay?". If no response and not breathing, call 911 / 112.</p>
+          <p>• Place hands in the center of the chest and push hard and fast (100-120 beats/min).</p>
+          <p>• If breathing normally but unconscious, place them on their side in the recovery position.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast + Confetti containers -->
+
 <div class="toast-container" id="toastContainer"></div>
 <div class="confetti-container" id="confettiContainer"></div>
 
@@ -1369,6 +1490,17 @@ function renderNote(note) {
   const esc = note.escalation_required
     ? `<div class="escalate-flag">⚑ Escalation required — ${note.escalation_reason || 'flagged for human review'}</div>`
     : '';
+
+  const fa = note.first_aid ? `
+    <div class="first-aid-box ${note.first_aid.emergency ? 'critical-fa' : ''}">
+      <div class="fa-title">${note.first_aid.icon} Immediate First Aid: <b>${note.first_aid.title}</b></div>
+      <ul class="fa-steps">
+        ${note.first_aid.steps.map(s => `<li>${s}</li>`).join('')}
+      </ul>
+      ${note.first_aid.emergency ? '<div class="fa-call-alert">🚨 Call emergency dispatch (911 / 112 / 108) immediately!</div>' : ''}
+    </div>
+  ` : '';
+
   noteBody.innerHTML = `
     <div class="note-field">
       <div class="k">Urgency / Department</div>
@@ -1380,25 +1512,27 @@ function renderNote(note) {
     </div>
     <div class="note-field">
       <div class="k">Patient Reported</div>
-        <div class="v">${note.patient_reported}</div>
-      </div>
-      <div class="note-field">
-        <div class="k">Follow-ups Established</div>
-        <div class="v">${note.follow_ups_established}</div>
-      </div>
-      <div class="note-field">
-        <div class="k">Unknown Factors</div>
-        <div class="v">${note.unknown_factors}</div>
-      </div>
-      <div class="note-field">
-        <div class="k">Reasoning</div>
-        <div class="v">${note.reasoning}</div>
-      </div>
-      ${esc}
-      <button class="export-btn" onclick="window.print()">📄 Export Triage Note</button>
-    `;
-    updateGauge(note.urgency_level);
-  }
+      <div class="v">${note.patient_reported}</div>
+    </div>
+    <div class="note-field">
+      <div class="k">Follow-ups Established</div>
+      <div class="v">${note.follow_ups_established}</div>
+    </div>
+    <div class="note-field">
+      <div class="k">Unknown Factors</div>
+      <div class="v">${note.unknown_factors}</div>
+    </div>
+    <div class="note-field">
+      <div class="k">Reasoning</div>
+      <div class="v">${note.reasoning}</div>
+    </div>
+    ${fa}
+    ${esc}
+    <button class="export-btn" onclick="window.print()">📄 Export Triage Note</button>
+  `;
+  updateGauge(note.urgency_level);
+}
+
 
   /* ==================================================================
     SESSION MANAGEMENT
@@ -1814,7 +1948,11 @@ if (fabBtn) {
 
 /* Keyboard Shortcuts */
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { const modal = $('#shortcutsModal'); if(modal) modal.classList.remove('visible'); return; }
+  if (e.key === 'Escape') {
+    const modal = $('#shortcutsModal'); if(modal) modal.classList.remove('visible');
+    const faModal = $('#firstAidModal'); if(faModal) faModal.classList.remove('visible');
+    return;
+  }
   if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
   if (e.key === '?') { e.preventDefault(); const modal = $('#shortcutsModal'); if(modal) modal.classList.toggle('visible'); }
   if (e.key === '/') { e.preventDefault(); composerInput.focus(); }
@@ -1827,8 +1965,33 @@ if (shortcutsModal) {
   shortcutsModal.addEventListener('click', (e) => { if (e.target === shortcutsModal) shortcutsModal.classList.remove('visible'); });
 }
 
+/* First Aid Modal */
+const firstAidBtn = $('#firstAidBtn');
+const firstAidModal = $('#firstAidModal');
+const closeFirstAidModal = $('#closeFirstAidModal');
+const fabFirstAid = $('#fabFirstAid');
+
+if (firstAidBtn && firstAidModal) {
+  firstAidBtn.addEventListener('click', () => firstAidModal.classList.add('visible'));
+  if (closeFirstAidModal) {
+    closeFirstAidModal.addEventListener('click', () => firstAidModal.classList.remove('visible'));
+  }
+  if (fabFirstAid) {
+    fabFirstAid.addEventListener('click', () => {
+      firstAidModal.classList.add('visible');
+      fabOpen = false;
+      $('#fabMenu').classList.remove('visible');
+      $('#fabBtn').textContent = '⚡';
+    });
+  }
+  firstAidModal.addEventListener('click', (e) => {
+    if (e.target === firstAidModal) firstAidModal.classList.remove('visible');
+  });
+}
+
 // Auto-start initial triage session on page load
 startSession();
+
 </script>
 
 

@@ -124,6 +124,129 @@ class TriageSession:
 sessions: dict = {}
 
 
+FIRST_AID_GUIDES = {
+    "CHEST_PAIN_001": {
+        "title": "Cardiac / Acute Chest Pain",
+        "icon": "🫀",
+        "emergency": True,
+        "steps": [
+            "Call Emergency Services immediately (911 / 112 / 108).",
+            "Have the patient stop all physical activity and sit in a comfortable, upright position.",
+            "Loosen tight clothing around the neck, chest, and waist.",
+            "If prescribed nitroglycerin or advised by emergency dispatch, assist them in taking it.",
+            "Stay calm, do not leave the patient unattended, and prepare for CPR if needed."
+        ],
+        "steps_es": [
+            "Llame a emergencias de inmediato (911 / 112 / 108).",
+            "Haga que la persona descanse sentada en posición cómoda y tranquila.",
+            "Afloje la ropa ajustada alrededor del cuello y pecho.",
+            "Si tiene nitroglicerina recetada, ayúdele a tomarla según indicaciones médicas.",
+            "Mantenga la calma y vigile la respiración continuamente."
+        ]
+    },
+    "BREATHING_001": {
+        "title": "Acute Breathing Difficulty / Asthma",
+        "icon": "🫁",
+        "emergency": True,
+        "steps": [
+            "Call Emergency Services immediately.",
+            "Sit the person upright leaning slightly forward (tripod position) to ease breathing.",
+            "Loosen tight collars, ties, or restrictive belts.",
+            "Assist the patient with their prescribed rescue inhaler (e.g. Albuterol).",
+            "Keep the area quiet and ventilated to prevent panic."
+        ],
+        "steps_es": [
+            "Llame a emergencias inmediatamente.",
+            "Ayude a la persona a sentarse erguida inclinada hacia adelante.",
+            "Afloje la ropa apretada y asegure aire fresco.",
+            "Ayúdele a usar su inhalador de rescate recetado.",
+            "Mantenga la calma para evitar hiperventilación."
+        ]
+    },
+    "INJURY_001": {
+        "title": "Traumatic Injury / Wound Care / Fracture",
+        "icon": "🩹",
+        "emergency": False,
+        "steps": [
+            "Direct Pressure: Apply firm, continuous pressure to bleeding wounds with a clean cloth.",
+            "Immobilize: Do NOT attempt to straighten or manipulate broken bones or dislocated joints.",
+            "Cold Therapy: Apply ice wrapped in a towel for 15-20 minutes to reduce acute swelling.",
+            "Shock Prevention: Keep the person warm, calm, and resting flat with legs elevated if no spinal injury."
+        ],
+        "steps_es": [
+            "Presión directa: Aplique presión firme sobre heridas sangrantes con un paño limpio.",
+            "Inmovilización: NO intente enderezar huesos deformados.",
+            "Frío local: Aplique hielo con una toalla durante 15-20 minutos para la inflamación.",
+            "Prevención de shock: Abrigue a la persona y manténgala en reposo."
+        ]
+    },
+    "ABDOMINAL_PAIN_001": {
+        "title": "Severe Abdominal Distress",
+        "icon": "🤢",
+        "emergency": False,
+        "steps": [
+            "Position of Comfort: Lie down on the side with knees drawn toward the chest.",
+            "Nil By Mouth: Do NOT ingest solid food or heavy drinks until clinically cleared.",
+            "Avoid Painkillers: Do not take NSAIDs (ibuprofen/aspirin) without medical advice as they can worsen gastric bleeding.",
+            "Seek urgent or emergency medical evaluation promptly."
+        ],
+        "steps_es": [
+            "Postura de alivio: Acuéstese de lado con las rodillas flexionadas.",
+            "Ayuno: No consuma alimentos sólidos ni bebidas pesadas hasta revisión médica.",
+            "Evite automedicarse con analgésicos que puedan encubrir el cuadro clínico.",
+            "Acuda a valoración de urgencias sin demora."
+        ]
+    },
+    "FEVER_001": {
+        "title": "Fever & Infection Management",
+        "icon": "🌡️",
+        "emergency": False,
+        "steps": [
+            "Hydration: Drink plenty of water, electrolyte fluids, or light broths in frequent sips.",
+            "Environment: Rest in a cool, ventilated room with light breathable clothing.",
+            "Tepid Compresses: Apply a cool, damp cloth to forehead, neck, and wrists.",
+            "Medication: Take directed fever reducers (acetaminophen or ibuprofen) if appropriate."
+        ],
+        "steps_es": [
+            "Hidratación: Beba agua y soluciones de rehidratación con frecuencia.",
+            "Ambiente fresco: Use ropa ligera y mantenga el espacio bien ventilado.",
+            "Compresas: Aplique paños tibios o frescos en la frente y cuello.",
+            "Antitérmicos: Tome paracetamol o ibuprofeno según las pautas recomendadas."
+        ]
+    },
+    "MILD_SYMPTOMS_001": {
+        "title": "Minor Ailments & Supportive Care",
+        "icon": "💊",
+        "emergency": False,
+        "steps": [
+            "Rest: Allow your body adequate sleep and minimal physical strain.",
+            "Observation: Keep track of symptom progression over the next 24-48 hours.",
+            "Consultation: Contact a primary care physician or pharmacist if symptoms worsen or linger."
+        ],
+        "steps_es": [
+            "Reposo: Permita que su cuerpo descanse adecuadamente.",
+            "Observación: Vigile la evolución de las molestias durante 24-48 horas.",
+            "Consulta: Acuda a su médico habitual si no observa mejoría."
+        ]
+    },
+    "UNCERTAIN_001": {
+        "title": "General Triage & First-Aid Protocol",
+        "icon": "ℹ️",
+        "emergency": False,
+        "steps": [
+            "Monitor Alertness: Check responsiveness, steady breathing, and pulse.",
+            "Warning Signs: If sudden confusion, chest pain, or breathing trouble occurs, call Emergency immediately.",
+            "In-Person Evaluation: Visit Urgent Care for an accurate hands-on physical assessment."
+        ],
+        "steps_es": [
+            "Vigilar constantes: Verifique la respiración y el nivel de consciencia.",
+            "Signos de alarma: Si nota opresión en el pecho o falta de aire, llame a emergencias.",
+            "Atención médica: Acuda a un centro sanitario para una valoración profesional."
+        ]
+    }
+}
+
+
 # ---------------------------------------------------------------------- #
 # Triage note construction
 # ---------------------------------------------------------------------- #
@@ -139,6 +262,8 @@ def build_triage_note(session: TriageSession, match: RuleMatch, retrieved_docs: 
         escalation_reason = "Rule requires mandatory escalation for this presentation."
 
     follow_up_turns = [t["content"] for t in session.turns if t["role"] == "patient"][1:]
+    fa_info = FIRST_AID_GUIDES.get(match.rule_id, FIRST_AID_GUIDES["UNCERTAIN_001"])
+    steps = fa_info["steps_es"] if getattr(session, "language", "en").startswith("es") else fa_info["steps"]
 
     note = {
         "urgency_level": match.urgency.upper(),
@@ -153,12 +278,19 @@ def build_triage_note(session: TriageSession, match: RuleMatch, retrieved_docs: 
         "reasoning": match.description,
         "matched_keywords": match.matched_keywords,
         "matched_red_flags": match.matched_red_flags,
+        "first_aid": {
+            "title": fa_info["title"],
+            "icon": fa_info["icon"],
+            "emergency": fa_info["emergency"],
+            "steps": steps
+        },
         "retrieved_context": [
             {"doc_id": d["doc_id"], "relevance": d["score"]} for d in retrieved_docs
         ],
     }
     note["plain_summary"] = llm.phrase_summary(note)
     return note
+
 
 
 def _infer_unknowns(match: RuleMatch) -> str:
@@ -395,9 +527,15 @@ def get_analytics():
 
 
 
+@app.route("/api/first-aid", methods=["GET"])
+def get_first_aid():
+    return jsonify(FIRST_AID_GUIDES)
+
+
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok", "llm_provider": llm.name, "rules_loaded": len(engine.all_rules())})
+
 
 
 @app.errorhandler(404)
