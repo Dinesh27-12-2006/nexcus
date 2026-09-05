@@ -1175,6 +1175,9 @@ main {
 
 <script>
 
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
 let currentStep = 1;
 let fabOpen = false;
 
@@ -1210,64 +1213,17 @@ function setStep(step) {
   });
 }
 
-$('#voiceBtn').addEventListener('click', () => {
-  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-    showToast('Voice input not supported in this browser', '⚠️');
-    return;
-  }
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
-  const lang = $('#langSelect').value;
-  recognition.lang = lang === 'es' ? 'es-ES' : 'en-US';
-  recognition.interimResults = false;
-  const btn = $('#voiceBtn');
-  btn.classList.add('recording');
-  showToast(lang === 'es' ? 'Escuchando...' : 'Listening... speak now', '🎤');
-  recognition.start();
-  recognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
-    composerInput.value = transcript;
-    btn.classList.remove('recording');
-    showToast(lang === 'es' ? '¡Voz capturada!' : 'Voice captured!', '✓');
-  };
-  recognition.onerror = () => { btn.classList.remove('recording'); showToast('Error', '⚠️'); };
-  recognition.onend = () => { btn.classList.remove('recording'); };
-});
-
-$('#fabBtn').addEventListener('click', () => {
-  fabOpen = !fabOpen;
-  $('#fabMenu').classList.toggle('visible', fabOpen);
-  $('#fabBtn').textContent = fabOpen ? '✕' : '⚡';
-});
-$('#fabNewSession').addEventListener('click', () => { startSession(); fabOpen = false; $('#fabMenu').classList.remove('visible'); $('#fabBtn').textContent = '⚡'; });
-$('#fabDarkMode').addEventListener('click', () => { $('#themeToggle').click(); });
-$('#fabShortcuts').addEventListener('click', () => { $('#shortcutsModal').classList.add('visible'); fabOpen = false; $('#fabMenu').classList.remove('visible'); $('#fabBtn').textContent = '⚡'; });
-$('#fabExport').addEventListener('click', () => { if (triageComplete) window.print(); else showToast('Complete a triage first', '⚠️'); });
-
-$('#kbdHint').addEventListener('click', () => { $('#shortcutsModal').classList.add('visible'); });
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { $('#shortcutsModal').classList.remove('visible'); return; }
-  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
-  if (e.key === '?') { e.preventDefault(); $('#shortcutsModal').classList.toggle('visible'); }
-  if (e.key === '/') { e.preventDefault(); composerInput.focus(); }
-  if (e.ctrlKey && e.key === 'n') { e.preventDefault(); startSession(); }
-  if (e.ctrlKey && e.key === 'd') { e.preventDefault(); $('#themeToggle').click(); }
-  if (e.ctrlKey && e.key === 'p' && triageComplete) { e.preventDefault(); window.print(); }
-});
-$('#shortcutsModal').addEventListener('click', (e) => { if (e.target === $('#shortcutsModal')) $('#shortcutsModal').classList.remove('visible'); });
-
 /* ==================================================================
    APP STATE
    ================================================================== */
+
+
 
 const API = "";
 let sessionId = null;
 let triageComplete = false;
 let timerInterval = null;
 let sessionStart = null;
-
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => document.querySelectorAll(sel);
 
 const convLog = $('#convLog');
 const composerInput = $('#composerInput');
