@@ -457,13 +457,17 @@ main {
   padding: 5px 12px;
   border-radius: 20px;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
   transition: all var(--transition);
 }
-.symptom-chip:hover {
+.symptom-chip:hover, .symptom-chip:active {
   background: var(--accent-glow);
   border-color: var(--accent);
   transform: translateY(-1px);
 }
+
 
 /* Composer */
 .composer {
@@ -1474,29 +1478,52 @@ function renderNote(note) {
 /* ==================================================================
    EVENT LISTENERS
    ================================================================== */
-sendBtn.addEventListener('click', () => sendMessage(composerInput.value));
+const handleSend = () => sendMessage(composerInput.value);
+sendBtn.addEventListener('click', handleSend);
+sendBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleSend(); });
+
 composerInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(composerInput.value); }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
 });
-$('#newSessionBtn').addEventListener('click', startSession);
+
+const newSessionBtn = $('#newSessionBtn');
+if (newSessionBtn) {
+  newSessionBtn.addEventListener('click', startSession);
+  newSessionBtn.addEventListener('touchend', (e) => { e.preventDefault(); startSession(); });
+}
 
 const brandBtn = $('#brandBtn');
 if (brandBtn) {
-  brandBtn.addEventListener('click', () => {
+  const handleBrandClick = () => {
     const triageTab = $('[data-view="triage"]');
     if (triageTab) triageTab.click();
     startSession();
-  });
+  };
+  brandBtn.addEventListener('click', handleBrandClick);
+  brandBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleBrandClick(); });
 }
 
 // Symptom chips
+async function handleChipClick(chip) {
+  const text = chip.dataset.symptom;
+  composerInput.value = text;
+  if (!sessionId || triageComplete) {
+    await startSession();
+  }
+  sendMessage(text);
+}
+
 $$('.symptom-chip').forEach(chip => {
-  chip.addEventListener('click', async () => {
-    const text = chip.dataset.symptom;
-    if (!sessionId || triageComplete) await startSession();
-    sendMessage(text);
+  chip.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleChipClick(chip);
+  });
+  chip.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    handleChipClick(chip);
   });
 });
+
 
 // Auto-resize textarea
 composerInput.addEventListener('input', () => {
