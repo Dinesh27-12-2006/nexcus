@@ -202,12 +202,29 @@ def process_triage():
     session_id = data.get("session_id")
     patient_input = (data.get("message") or "").strip()
 
-    if not session_id or session_id not in sessions:
-        return jsonify({"error": "Session not found. Start a new triage session."}), 404
     if not patient_input:
         return jsonify({"error": "Message cannot be empty."}), 400
 
+    if not session_id:
+        session_id = str(uuid.uuid4())
+
+    language = data.get("language", "en")
+    client_accumulated = (data.get("accumulated_text") or "").strip()
+    turn_count_hint = int(data.get("turn_count", 0))
+
+    if session_id not in sessions:
+        sessions[session_id] = TriageSession(session_id)
+        sessions[session_id].language = language
+        if client_accumulated and client_accumulated != patient_input:
+            # Reconstruct accumulated context from previous serverless turns
+            sessions[session_id].accumulated_text = client_accumulated
+            sessions[session_id].patient_initial = client_accumulated.split("\n")[0]
+        if turn_count_hint > 1:
+            for _ in range(turn_count_hint - 1):
+                sessions[session_id].turns.append({"role": "patient", "content": "prior turn"})
+
     session = sessions[session_id]
+
 
     if session.complete:
         return jsonify({

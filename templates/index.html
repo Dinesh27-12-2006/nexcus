@@ -454,20 +454,16 @@ main {
   color: var(--accent);
   background: var(--accent-dim);
   border: 1px solid transparent;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 20px;
   cursor: pointer;
-  touch-action: manipulation;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
   transition: all var(--transition);
 }
-.symptom-chip:hover, .symptom-chip:active {
+.symptom-chip:hover {
   background: var(--accent-glow);
   border-color: var(--accent);
   transform: translateY(-1px);
 }
-
 
 /* Composer */
 .composer {
@@ -1054,14 +1050,13 @@ main {
           <div class="typing-dot"></div>
         </div>
         <div class="symptom-chips" id="symptomChips">
-          <button type="button" class="symptom-chip" data-symptom="I'm experiencing chest pain">🫀 Chest Pain</button>
-          <button type="button" class="symptom-chip" data-symptom="I have a fever and chills">🌡️ Fever</button>
-          <button type="button" class="symptom-chip" data-symptom="I'm having difficulty breathing">🫁 Breathing Issues</button>
-          <button type="button" class="symptom-chip" data-symptom="I had an injury or fall">🩹 Injury</button>
-          <button type="button" class="symptom-chip" data-symptom="I have stomach pain and nausea">🤢 Stomach Pain</button>
-          <button type="button" class="symptom-chip" data-symptom="I have a mild symptom or small concern">💊 Mild Concern</button>
+          <button class="symptom-chip" data-symptom="I'm experiencing chest pain">🫀 Chest Pain</button>
+          <button class="symptom-chip" data-symptom="I have a fever and chills">🌡️ Fever</button>
+          <button class="symptom-chip" data-symptom="I'm having difficulty breathing">🫁 Breathing Issues</button>
+          <button class="symptom-chip" data-symptom="I had an injury or fall">🩹 Injury</button>
+          <button class="symptom-chip" data-symptom="I have stomach pain and nausea">🤢 Stomach Pain</button>
+          <button class="symptom-chip" data-symptom="I have a mild symptom or small concern">💊 Mild Concern</button>
         </div>
-
         <div class="composer">
           <textarea id="composerInput" placeholder="Describe your symptoms or answer the question..." rows="1"></textarea>
           <button class="voice-btn" id="voiceBtn" title="Voice input">🎤</button>
@@ -1403,8 +1398,11 @@ function renderNote(note) {
   /* ==================================================================
     SESSION MANAGEMENT
     ================================================================== */
+  let clientTurns = [];
+
   async function startSession() {
     triageComplete = false;
+    clientTurns = [];
     notePanel.style.display = 'none';
     gaugeSection.style.display = 'none';
     convLog.innerHTML = '';
@@ -1414,15 +1412,24 @@ function renderNote(note) {
     convStatusDot.classList.remove('complete');
 
     showTyping();
-    const res = await fetch(API + '/api/start-triage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language: $('#langSelect').value }) });
-    const data = await res.json();
-    hideTyping();
+    try {
+      const res = await fetch(API + '/api/start-triage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: $('#langSelect').value })
+      });
+      const data = await res.json();
+      hideTyping();
 
-    sessionId = data.session_id;
-    providerName.textContent = data.provider;
-    addTurn('assistant', data.message);
-    startTimer();
-    showToast('New triage session started', '🩺');
+      sessionId = data.session_id;
+      providerName.textContent = data.provider;
+      addTurn('assistant', data.message);
+      startTimer();
+      showToast('New triage session started', '🩺');
+    } catch(err) {
+      hideTyping();
+      showToast('Could not reach triage service', '⚠️');
+    }
   }
 
   async function sendMessage(text) {
@@ -1430,9 +1437,11 @@ function renderNote(note) {
     if (!sessionId) {
       await startSession();
     }
-    if (!sessionId) return;
-    addTurn('patient', text);
+    const cleanText = text.trim();
+    addTurn('patient', cleanText);
+    clientTurns.push(cleanText);
     composerInput.value = '';
+    composerInput.style.height = 'auto';
     sendBtn.disabled = true;
     setStep(2);
     showTyping();
@@ -1441,7 +1450,13 @@ function renderNote(note) {
       const res = await fetch(API + '/api/triage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId, message: text, language: $('#langSelect').value })
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: cleanText,
+          language: $('#langSelect').value,
+          accumulated_text: clientTurns.join('. '),
+          turn_count: clientTurns.length
+        })
       });
       const data = await res.json();
       hideTyping();
@@ -1467,14 +1482,14 @@ function renderNote(note) {
         }
         showToast('Triage complete — note generated', '✅');
       }
-  } catch (err) {
-    hideTyping();
-    addTurn('assistant', 'Connection error. Please try again.');
-  } finally {
-    sendBtn.disabled = false;
-    composerInput.focus();
+    } catch (err) {
+      hideTyping();
+      addTurn('assistant', 'Connection error. Please try again.');
+    } finally {
+      sendBtn.disabled = false;
+      composerInput.focus();
+    }
   }
-}
 
 /* ==================================================================
    EVENT LISTENERS
@@ -1496,18 +1511,14 @@ if (brandBtn) {
 
 // Symptom chips
 $$('.symptom-chip').forEach(chip => {
-  const triggerSymptom = async (e) => {
+  chip.addEventListener('click', async (e) => {
     e.preventDefault();
     const text = chip.dataset.symptom;
     composerInput.value = text;
     composerInput.focus();
-    if (!sessionId || triageComplete) {
-      await startSession();
-    }
+    if (!sessionId || triageComplete) await startSession();
     sendMessage(text);
-  };
-  chip.addEventListener('click', triggerSymptom);
-  chip.addEventListener('touchend', triggerSymptom);
+  });
 });
 
 
