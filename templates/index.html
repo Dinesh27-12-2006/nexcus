@@ -1178,44 +1178,10 @@ main {
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
-let currentStep = 1;
-let fabOpen = false;
-
-function launchConfetti() {
-  const container = $('#confettiContainer');
-  const colors = ['#1A8D8D', '#2CB5A0', '#34D1B8', '#DC3545', '#E85D26', '#D4920B', '#28A745', '#6366F1'];
-  for (let i = 0; i < 60; i++) {
-    const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
-    piece.style.left = Math.random() * 100 + '%';
-    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-    piece.style.width = (6 + Math.random() * 8) + 'px';
-    piece.style.height = (6 + Math.random() * 8) + 'px';
-    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-    piece.style.animationDuration = (2 + Math.random() * 2) + 's';
-    piece.style.animationDelay = (Math.random() * 0.8) + 's';
-    container.appendChild(piece);
-  }
-  setTimeout(() => container.innerHTML = '', 5000);
-}
-
-function setStep(step) {
-  currentStep = step;
-  $$('.step').forEach((s, i) => {
-    s.classList.remove('active', 'done');
-    if (i + 1 < step) s.classList.add('done');
-    if (i + 1 === step) s.classList.add('active');
-  });
-  $$('.step-connector').forEach((c, i) => {
-    c.classList.remove('done', 'active');
-    if (i + 1 < step) c.classList.add('done');
-    if (i + 1 === step) c.classList.add('active');
-  });
-}
-
 /* ==================================================================
    APP STATE
    ================================================================== */
+
 
 
 
@@ -1795,9 +1761,12 @@ document.addEventListener('keydown', (e) => {
 const shortcutsModal = $('#shortcutsModal');
 if (shortcutsModal) {
   shortcutsModal.addEventListener('click', (e) => { if (e.target === shortcutsModal) shortcutsModal.classList.remove('visible'); });
+}
+
 // Auto-start initial triage session on page load
 startSession();
 </script>
+
 
 </body>
 </html>
