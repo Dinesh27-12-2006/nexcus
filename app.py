@@ -47,7 +47,11 @@ except ImportError:
     pass
 
 BASE_DIR = os.path.dirname(__file__)
-DB_PATH = os.path.join(BASE_DIR, "triages.db")
+if os.environ.get("VERCEL") or os.environ.get("AWS_EXECUTION_ENV") or not os.access(BASE_DIR, os.W_OK):
+    DB_PATH = "/tmp/triages.db"
+else:
+    DB_PATH = os.path.join(BASE_DIR, "triages.db")
+
 RULES_JSON_PATH = os.path.join(BASE_DIR, "triage_rules.json")
 SAMPLE_DATA_PATH = os.path.join(BASE_DIR, "sample_data.json")
 
@@ -69,27 +73,31 @@ def get_db():
 
 
 def init_db():
-    conn = get_db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS triage_sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id TEXT NOT NULL,
-            patient_description TEXT,
-            triage_note TEXT,
-            turn_count INTEGER DEFAULT 0,
-            created_at TEXT DEFAULT (datetime('now'))
-        )
-    """)
-    # Migrate existing DBs: add turn_count if missing.
     try:
-        conn.execute("ALTER TABLE triage_sessions ADD COLUMN turn_count INTEGER DEFAULT 0")
-    except sqlite3.OperationalError:
-        pass  # column already exists
-    conn.commit()
-    conn.close()
+        conn = get_db()
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS triage_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                patient_description TEXT,
+                triage_note TEXT,
+                turn_count INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now'))
+            )
+        """)
+        # Migrate existing DBs: add turn_count if missing.
+        try:
+            conn.execute("ALTER TABLE triage_sessions ADD COLUMN turn_count INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass  # column already exists
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Warning: DB initialization skipped/failed: {e}")
 
 
 init_db()
+
 
 
 # ---------------------------------------------------------------------- #
@@ -232,13 +240,17 @@ def process_triage():
         note["plain_summary"] = plain_summary
         session.add_turn("assistant", plain_summary)
 
-        conn = get_db()
-        conn.execute(
-            "INSERT INTO triage_sessions (session_id, patient_description, triage_note, turn_count) VALUES (?, ?, ?, ?)",
-            (session_id, session.patient_initial, json.dumps(note), session.patient_turn_count()),
-        )
-        conn.commit()
-        conn.close()
+        try:
+            init_db()
+            conn = get_db()
+            conn.execute(
+                "INSERT INTO triage_sessions (session_id, patient_description, triage_note, turn_count) VALUES (?, ?, ?, ?)",
+                (session_id, session.patient_initial, json.dumps(note), session.patient_turn_count()),
+            )
+            conn.commit()
+            conn.close()
+        except Exception as db_err:
+            print(f"Warning: Failed to save session to DB: {db_err}")
 
         return jsonify({
             "complete": True,
@@ -260,23 +272,27 @@ def process_triage():
 
 @app.route("/api/triage-history", methods=["GET"])
 def get_history():
-    conn = get_db()
-    rows = conn.execute(
-        "SELECT id, session_id, patient_description, triage_note, created_at "
-        "FROM triage_sessions ORDER BY created_at DESC LIMIT 25"
-    ).fetchall()
-    conn.close()
+    try:
+        init_db()
+        conn = get_db()
+        rows = conn.execute(
+            "SELECT id, session_id, patient_description, triage_note, created_at "
+            "FROM triage_sessions ORDER BY created_at DESC LIMIT 25"
+        ).fetchall()
+        conn.close()
 
-    history = []
-    for row in rows:
-        history.append({
-            "id": row["id"],
-            "session_id": row["session_id"],
-            "description": row["patient_description"],
-            "triage": json.loads(row["triage_note"]),
-            "timestamp": row["created_at"],
-        })
-    return jsonify(history)
+        history = []
+        for row in rows:
+            history.append({
+                "id": row["id"],
+                "session_id": row["session_id"],
+                "description": row["patient_description"],
+                "triage": json.loads(row["triage_note"]),
+                "timestamp": row["created_at"],
+            })
+        return jsonify(history)
+    except Exception as e:
+        return jsonify([])
 
 
 @app.route("/api/rules", methods=["GET"])
@@ -293,31 +309,39 @@ def get_sample_cases():
 
 @app.route("/api/triage-history/<session_id>", methods=["GET"])
 def get_session_detail(session_id):
-    conn = get_db()
-    row = conn.execute(
-        "SELECT id, session_id, patient_description, triage_note, turn_count, created_at "
-        "FROM triage_sessions WHERE session_id = ?", (session_id,)
-    ).fetchone()
-    conn.close()
-    if not row:
+    try:
+        init_db()
+        conn = get_db()
+        row = conn.execute(
+            "SELECT id, session_id, patient_description, triage_note, turn_count, created_at "
+            "FROM triage_sessions WHERE session_id = ?", (session_id,)
+        ).fetchone()
+        conn.close()
+        if not row:
+            return jsonify({"error": "Session not found"}), 404
+        return jsonify({
+            "id": row["id"],
+            "session_id": row["session_id"],
+            "description": row["patient_description"],
+            "triage": json.loads(row["triage_note"]),
+            "turn_count": row["turn_count"] or 0,
+            "timestamp": row["created_at"],
+        })
+    except Exception as e:
         return jsonify({"error": "Session not found"}), 404
-    return jsonify({
-        "id": row["id"],
-        "session_id": row["session_id"],
-        "description": row["patient_description"],
-        "triage": json.loads(row["triage_note"]),
-        "turn_count": row["turn_count"] or 0,
-        "timestamp": row["created_at"],
-    })
 
 
 @app.route("/api/analytics", methods=["GET"])
 def get_analytics():
-    conn = get_db()
-    rows = conn.execute(
-        "SELECT triage_note, turn_count FROM triage_sessions"
-    ).fetchall()
-    conn.close()
+    try:
+        init_db()
+        conn = get_db()
+        rows = conn.execute(
+            "SELECT triage_note, turn_count FROM triage_sessions"
+        ).fetchall()
+        conn.close()
+    except Exception as e:
+        rows = []
 
     total = len(rows)
     if total == 0:
@@ -351,6 +375,7 @@ def get_analytics():
         "escalation_rate": round(escalations / total * 100, 1),
         "avg_turns": round(total_turns / total, 1),
     })
+
 
 
 @app.route("/api/health", methods=["GET"])
