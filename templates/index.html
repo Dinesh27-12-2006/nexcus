@@ -978,11 +978,12 @@ main {
 </div>
 
 <header>
-  <div class="brand">
+  <div class="brand" id="brandBtn" style="cursor: pointer;" title="Click to start new session">
     <div class="brand-logo">N</div>
     <h1>NexusTiQ</h1>
     <span class="brand-track">PS01 · Intake Triage</span>
   </div>
+
   <div class="header-right">
     <select id="langSelect" class="lang-select">
       <option value="en">EN</option>
@@ -1460,10 +1461,15 @@ function renderNote(note) {
   }
 
   async function sendMessage(text) {
-    if (!text.trim() || !sessionId || triageComplete) return;
+    if (!text || !text.trim() || triageComplete) return;
+    if (!sessionId) {
+      await startSession();
+    }
+    if (!sessionId) return;
     addTurn('patient', text);
     composerInput.value = '';
-    sendBtn.disabled = true;\n    setStep(2);
+    sendBtn.disabled = true;
+    setStep(2);
     showTyping();
 
     try {
@@ -1475,7 +1481,8 @@ function renderNote(note) {
       const data = await res.json();
       hideTyping();
 
-      setStep(3);\n      if (data.error) {
+      setStep(3);
+      if (data.error) {
         addTurn('assistant', 'Error: ' + data.error);
         return;
       }
@@ -1484,7 +1491,9 @@ function renderNote(note) {
       if (data.turn >= 2) setStep(3);
 
       if (data.complete) {
-        triageComplete = true;\n        setStep(4);\n        launchConfetti();
+        triageComplete = true;
+        setStep(4);
+        launchConfetti();
         convStatusDot.classList.add('complete');
         stopTimer();
         renderNote(data.triage_note);
@@ -1511,11 +1520,20 @@ composerInput.addEventListener('keydown', (e) => {
 });
 $('#newSessionBtn').addEventListener('click', startSession);
 
+const brandBtn = $('#brandBtn');
+if (brandBtn) {
+  brandBtn.addEventListener('click', () => {
+    const triageTab = $('[data-view="triage"]');
+    if (triageTab) triageTab.click();
+    startSession();
+  });
+}
+
 // Symptom chips
 $$('.symptom-chip').forEach(chip => {
   chip.addEventListener('click', async () => {
     const text = chip.dataset.symptom;
-    if (!sessionId) await startSession();
+    if (!sessionId || triageComplete) await startSession();
     sendMessage(text);
   });
 });
@@ -1793,8 +1811,9 @@ document.addEventListener('keydown', (e) => {
 const shortcutsModal = $('#shortcutsModal');
 if (shortcutsModal) {
   shortcutsModal.addEventListener('click', (e) => { if (e.target === shortcutsModal) shortcutsModal.classList.remove('visible'); });
-}
-
+// Auto-start initial triage session on page load
+startSession();
 </script>
+
 </body>
 </html>
