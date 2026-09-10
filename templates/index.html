@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ================================================================
-   DESIGN SYSTEM — CSS Custom Properties
+  DESIGN SYSTEM — CSS Custom Properties
    ================================================================ */
 :root {
   /* Light theme (default) */
@@ -60,7 +60,7 @@
 }
 
 /* ================================================================
-   DARK THEME
+  DARK THEME
    ================================================================ */
 [data-theme="dark"] {
   --bg: #0D1117;
@@ -1044,9 +1044,15 @@ main {
   <div class="header-right">
     <button type="button" class="first-aid-header-btn" id="firstAidBtn" title="Emergency First Aid Protocol">🩹 First Aid</button>
     <select id="langSelect" class="lang-select">
-
-      <option value="en">EN</option>
-      <option value="es">ES</option>
+      <option value="en">🇺🇸 English</option>
+      <option value="es">🇪🇸 Spanish</option>
+      <option value="fr">🇫🇷 French</option>
+      <option value="hi">🇮🇳 Hindi</option>
+      <option value="de">🇩🇪 German</option>
+      <option value="ar">🇸🇦 Arabic</option>
+      <option value="pt">🇧🇷 Portuguese</option>
+      <option value="zh">🇨🇳 Chinese</option>
+      <option value="ta">🇮🇳 Tamil</option>
     </select>
     <span class="provider-badge">provider: <b id="providerName">—</b></span>
     <span class="kbd-hint" id="kbdHint" title="Keyboard shortcuts">⌨ ?</span>
@@ -1925,10 +1931,21 @@ if (voiceBtn) {
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.lang = langSelect.value === 'es' ? 'es-ES' : 'en-US';
+    const VOICE_LOCALES = {
+      en: 'en-US', es: 'es-ES', fr: 'fr-FR',
+      hi: 'hi-IN', de: 'de-DE', ar: 'ar-SA',
+      pt: 'pt-BR', zh: 'zh-CN', ta: 'ta-IN'
+    };
+    recognition.lang = VOICE_LOCALES[langSelect.value] || 'en-US';
     recognition.interimResults = false;
     voiceBtn.classList.add('recording');
-    showToast(langSelect.value === 'es' ? 'Escuchando...' : 'Listening... speak now', '🎤');
+    const LISTENING_MSG = {
+      en: 'Listening… speak now', es: 'Escuchando…',
+      fr: 'En écoute…', hi: 'सुन रहे हैं…',
+      de: 'Zuhören…', ar: '…جارٍ الاستماع',
+      pt: 'Ouvindo…', zh: '正在聆听…', ta: 'கேட்கிறோம்…'
+    };
+    showToast(LISTENING_MSG[langSelect.value] || 'Listening… speak now', '🎤');
     recognition.start();
     recognition.onresult = (e) => {
       const transcript = e.results[0][0].transcript;
